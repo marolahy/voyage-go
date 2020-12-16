@@ -1,4 +1,4 @@
-package org.vena.example.configuration
+package com.bezama.voyage.config
 
 import org.springframework.boot.autoconfigure.security.oauth2.resource.UserInfoTokenServices
 import org.springframework.boot.web.servlet.FilterRegistrationBean
@@ -15,7 +15,9 @@ import org.springframework.security.oauth2.client.filter.OAuth2ClientContextFilt
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableOAuth2Client
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter
 import org.springframework.web.filter.CompositeFilter
-import org.vena.example.extensions.kotlin.configure
+import org.vena.example.configuration.ClientResources
+import org.vena.example.configuration.FacebookConfig
+import org.vena.example.configuration.GooglePlusConfig
 import org.vena.example.security.OAuth2PrincipalExtractor
 import org.vena.example.security.OAuth2SsoAuthenticationSuccessHandler
 import org.vena.example.service.AccountService
@@ -29,13 +31,13 @@ class WebSecurityConfiguration(private val oauth2ClientContext: OAuth2ClientCont
                                private val googlePlusConfig: GooglePlusConfig,
                                private val accountService: AccountService) : WebSecurityConfigurerAdapter() {
 
-    override fun configure(auth: AuthenticationManagerBuilder) = configure(auth) {
-        userDetailsService(accountService).passwordEncoder(BCryptPasswordEncoder())
-        jdbcAuthentication().dataSource(dataSource)
+    override fun configure(auth: AuthenticationManagerBuilder) {
+        auth.userDetailsService(accountService).passwordEncoder(BCryptPasswordEncoder())
+        auth.jdbcAuthentication().dataSource(dataSource)
     }
 
-    override fun configure(http: HttpSecurity) = configure(http) {
-        antMatcher("/**")
+    override fun configure(http: HttpSecurity){
+        http.antMatcher("/**")
                 .authorizeRequests().antMatchers("/", "/login**", "/assets/**").permitAll()
                 .anyRequest().authenticated()
                 .and().formLogin().loginPage("/login").permitAll()
@@ -43,7 +45,7 @@ class WebSecurityConfiguration(private val oauth2ClientContext: OAuth2ClientCont
     }
 
     @Bean
-    fun oauth2ClientFilterRegistration(filter: OAuth2ClientContextFilter) = FilterRegistrationBean().apply {
+    fun oauth2ClientFilterRegistration(filter: OAuth2ClientContextFilter) = FilterRegistrationBean<OAuth2ClientContextFilter>().apply {
         this.filter = filter
         order = -100
     }
